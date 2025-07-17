@@ -41,7 +41,11 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           mv pr/core_mods.json core_mods.json
-          mv pr/core_mods.schema.json core_mods.schema.json
+
+          if [[ -f pr/core_mods.schema.json ]]; then
+            mv pr/core_mods.schema.json core_mods.schema.json
+          fi
+
           rm -rf pr
 
       - uses: denoland/setup-deno@v2
