@@ -1,0 +1,51 @@
+name: Validate core_mods.json
+
+on:
+  pull_request:
+  push:
+    branches: 'main'
+
+jobs:
+  validate:
+    name: ${{ matrix.job.name }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        job:
+          - name: Parse JSON
+            script: parse.js
+          - name: Validate lastUpdated timestamps
+            script: validate-timestamps.js
+
+    steps:
+      - name: Checkout repository
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      
+      - name: Checkout main branch
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Checkout PR changes
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          path: pr
+      
+      - name: Copy core_mods.json from PR
+        if: github.event_name == 'pull_request'
+        run: mv pr/core_mods.json core_mods.json && rm -rf pr
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Run script ${{ matrix.job.script }}
+        shell: bash
+        run: |
+          node ".github/scripts/${{ matrix.job.script }}"
+        
