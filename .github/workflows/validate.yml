@@ -14,9 +14,11 @@ jobs:
       matrix:
         job:
           - name: Parse JSON
-            script: parse.js
+            script: parse.ts
           - name: Validate lastUpdated timestamps
-            script: validate-timestamps.js
+            script: validate-timestamps.ts
+          - name: Validate against schema
+            script: validate-schema.ts
 
     steps:
       - name: Checkout repository
@@ -35,17 +37,21 @@ jobs:
         with:
           path: pr
       
-      - name: Copy core_mods.json from PR
+      - name: Copy core_mods.json and schema from PR
         if: github.event_name == 'pull_request'
-        run: mv pr/core_mods.json core_mods.json && rm -rf pr
+        run: |
+          mv pr/core_mods.json core_mods.json
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: latest
+          if [[ -f pr/core_mods.schema.json ]]; then
+            mv pr/core_mods.schema.json core_mods.schema.json
+          fi
+
+          rm -rf pr
+
+      - uses: denoland/setup-deno@v2
 
       - name: Run script ${{ matrix.job.script }}
         shell: bash
         run: |
-          node ".github/scripts/${{ matrix.job.script }}"
+          deno run --allow-read ".github/scripts/${{ matrix.job.script }}"
         
