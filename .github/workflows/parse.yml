@@ -1,0 +1,22 @@
+name: Parse core_mods.json on PR
+
+on:
+  pull_request:
+
+jobs:
+  parse-json:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Parse core_mods.json
+        shell: bash
+        run: |
+          node -e 'console.log(JSON.parse(require("fs").readFileSync("core_mods.json", "utf8")))'
