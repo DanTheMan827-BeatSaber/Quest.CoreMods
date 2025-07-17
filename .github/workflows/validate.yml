@@ -3,7 +3,7 @@ name: Validate core_mods.json
 on:
   pull_request:
   push:
-    branches: '*'
+    branches: 'main'
 
 jobs:
   validate:
